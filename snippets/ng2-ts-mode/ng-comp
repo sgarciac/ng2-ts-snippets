@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: ng generate component
+# key: ng-comp
+# group: ng generate
+# type: command
+# --
