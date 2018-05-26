@@ -1,5 +1,12 @@
 ;; Angular base functions
 
+(defun angular-buffer-type ()
+  (let ((parts (split-string
+                (file-name-base
+                 (buffer-path)) "\\.")))
+    (when (= (length parts) 2)
+      (intern (cadr parts)))))
+
 (defun angular-relative-path (full-path angular-dir)
   "Given a full path for a file and the angular dir, returns
 a relative path suitable for use with angular cli"
@@ -7,23 +14,24 @@ a relative path suitable for use with angular cli"
                                         (file-name-as-directory "src")
                                         (file-name-as-directory "app"))))
 
-(defun angular-component-name-for-buffer ()
+(defun angular-relative-name-for-buffer ()
   "For the current buffer, given that it contains an angular
 typescript file, returns its relative path suitable for use
 with angula cli"
   (let* ((dir (file-name-directory (buffer-path)))
-         (basename (first (remove
-                           ""
-                           (split-string
-                            (file-name-base
-                             (buffer-path)) "\\.")))))
+         (basename (car (remove
+                         ""
+                         (split-string
+                          (file-name-base
+                           (buffer-path)) "\\.")))))
     (angular-relative-path (concat dir basename) (find-ng-project-dir-for-buffer))))
 
 (defun find-ng-project-dir (dir)
   "Find the closest angular project directory, from dir and up"
   (if (string= "/" dir)
       nil
-    (if (file-exists-p (expand-file-name "angular.json" dir))
+    (if (or (file-exists-p (expand-file-name "angular.json" dir))
+            (file-exists-p (expand-file-name ".angular-cli.json" dir)))
         dir
       (find-ng-project-dir (expand-file-name "../" dir)))))
 
@@ -33,10 +41,10 @@ with angula cli"
   (let ((default-directory dir))
     (if (string= "/" dir)
         nil
-      (let ((modules (remove-if
+      (let ((modules (seq-filter
                       (lambda (module)
-                        (or (string-contains module "-routing")
-                            (string-contains module ".#")))
+                        (not (or (string-contains module "-routing")
+                                 (string-contains module ".#"))))
                       (file-expand-wildcards "*.module.ts"))))
         (if
             modules
@@ -56,25 +64,27 @@ from dir and up, for the current buffer"
 
 ;; Generators
 
-(defun ng-generate-for-buffer (type &optional force add-to-module dry-run)
+(defun ng-generate-for-buffer (&optional skip-module dry-run)
   "Call ng generate"
-  (let ((default-directory (find-ng-project-dir-for-buffer))
-        (command (format "ng generate %s %s --flat %s %s %s"
-                         type
-                         (angular-component-name-for-buffer)
-                         (if force "-f" "")
-                         (if add-to-module
-                             (format "-m %s" (find-ng-closest-module-for-buffer))
-                           "")
-                         (if dry-run
-                             "--dry-run"
-                           ""
-                           )
-                         )))
-    (print (format "command: %s" command))
-    (shell-command-to-string command)
-    )
-  (unless dry-run (revert-buffer :ignore-auto :noconfirm)))
+  (save-current-buffer)
+  (let ((type (angular-buffer-type)))
+    (if (eq type 'module) (setq skip-module t))
+    (if (member type '(component directive module pipe service))
+        (let ((default-directory (find-ng-project-dir-for-buffer))
+              (command (format
+                        "ng generate %s %s --flat -f %s %s"
+                        type
+                        (angular-relative-name-for-buffer)
+                        (if (not skip-module)
+                            (format "-m %s" (find-ng-closest-module-for-buffer)) "")
+                        (if dry-run
+                            "--dry-run" "")
+                        )))
+          (print (format "command: %s" command))
+          (let ((result (shell-command-to-string command)))
+            (unless dry-run (revert-buffer :ignore-auto :noconfirm))
+            (print result)
+            result)))))
 
 ;; Utilities
 

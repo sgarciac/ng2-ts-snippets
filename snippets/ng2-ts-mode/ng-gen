@@ -1,6 +1,7 @@
 # -*- mode: snippet -*-
-# name: ng generate component
-# key: ng-comp
+# name: ng generate
+# key: ng-gen
 # group: ng generate
 # type: command
 # --
+(ng-generate-for-buffer)
