@@ -10,7 +10,7 @@ this software assumes some familiarity with all of these.
 
 You can install [ng2-ts-mode](https://github.com/AdamNiederer/ng2-mode) and
 [YASnippets](http://joaotavora.github.io/yasnippet/) via
-[Melpa](https://melpa.org/#/). Install ng-ts-snippets the usuarl way, for
+[Melpa](https://melpa.org/#/). Install ng-ts-snippets the usual way, for
 example:
 
 ```emacs-lisp
@@ -23,6 +23,8 @@ example:
 The main snippet is *ng-gen*. Open the file you want to generate, i.e. my-component.component.ts and expand
 ng-gen (ng-gen[TAB]). ng-gen-dr and ng-gen-si will pass --dry-run and
 --skip-import respectively.
+
+![ng-gen](https://github.com/sgarciac/ng2-ts-snippets/raw/master/images/example.gif)
 
 
 ## License
