@@ -54,8 +54,7 @@ with angula cli"
 (defun find-ng-project-dir-for-buffer ()
   "Find the closest angular project directory, from dir and up
 for the current buffer"
-  (or (find-ng-project-dir (file-name-directory (buffer-path)))
-      (file-name-directory (buffer-file-name))))
+  (find-ng-project-dir (file-name-directory (buffer-path))))
 
 (defun find-ng-closest-module-for-buffer ()
   "Find the closest angular module, discarding routing ones,
@@ -66,25 +65,31 @@ from dir and up, for the current buffer"
 
 (defun ng-generate-for-buffer (&optional skip-module dry-run)
   "Call ng generate"
+  (print "READY")
   (save-current-buffer)
-  (let ((type (angular-buffer-type)))
-    (if (eq type 'module) (setq skip-module t))
-    (if (member type '(component directive module pipe service))
-        (let ((default-directory (find-ng-project-dir-for-buffer))
+  (let ((type (angular-buffer-type))
+        (closest-module (find-ng-closest-module-for-buffer))
+        (ng-project-dir (find-ng-project-dir-for-buffer)))
+    (print ng-project-dir)
+    (when (eq type 'module) (setq skip-module t))
+    (cond
+     ((not ng-project-dir) (warn "You are not inside an angular cli project."))
+     ((and (not skip-module) (not closest-module)) (warn "No module found"))
+     ((not (member type '(component directive module pipe service))) (warn "Only *.[component|directive|module,|pipe|service].ts files are supported"))
+     (t (let ((default-directory ng-project-dir)
               (command (format
                         "ng generate %s %s --flat -f %s %s"
                         type
                         (angular-relative-name-for-buffer)
                         (if (not skip-module)
-                            (format "-m %s" (find-ng-closest-module-for-buffer)) "")
+                            (format "-m %s" closest-module) "")
                         (if dry-run
-                            "--dry-run" "")
-                        )))
+                            "--dry-run" ""))))
           (print (format "command: %s" command))
           (let ((result (shell-command-to-string command)))
             (unless dry-run (revert-buffer :ignore-auto :noconfirm))
             (print result)
-            result)))))
+            result))))))
 
 ;; Utilities
 
