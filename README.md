@@ -20,12 +20,9 @@ example:
 
 # Usage
 
-There is only a single snippet
-
-*ng-gen*
-
-Open the file you want to generate, i.e. my-component.component.ts and expand
-the ng-gen (ng-gen[TAB])
+The main snippet is *ng-gen*. Open the file you want to generate, i.e. my-component.component.ts and expand
+ng-gen (ng-gen[TAB]). ng-gen-dr and ng-gen-si will pass --dry-run and
+--skip-import respectively.
 
 
 ## License
