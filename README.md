@@ -24,7 +24,7 @@ The main snippet is *ng-gen*. Open the file you want to generate, i.e. my-compon
 ng-gen (ng-gen[TAB]). ng-gen-dr and ng-gen-si will pass --dry-run and
 --skip-import respectively.
 
-![ng-gen](https://github.com/sgarciac/ng2-ts-snippets/raw/master/images/example.gif)
+![ng-gen](https://github.com/sgarciac/ng2-ts-snippets/raw/master/images/anim.gif)
 
 
 ## License
