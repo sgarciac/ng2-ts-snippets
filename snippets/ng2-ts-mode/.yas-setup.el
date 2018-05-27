@@ -65,17 +65,15 @@ from dir and up, for the current buffer"
 
 (defun ng-generate-for-buffer (&optional skip-module dry-run)
   "Call ng generate"
-  (print "READY")
   (save-current-buffer)
   (let ((type (angular-buffer-type))
         (closest-module (find-ng-closest-module-for-buffer))
         (ng-project-dir (find-ng-project-dir-for-buffer)))
-    (print ng-project-dir)
     (when (eq type 'module) (setq skip-module t))
     (cond
      ((not ng-project-dir) (warn "You are not inside an angular cli project."))
      ((and (not skip-module) (not closest-module)) (warn "No module found"))
-     ((not (member type '(component directive module pipe service))) (warn "Only *.[component|directive|module,|pipe|service].ts files are supported"))
+     ((not (member type '(component directive module pipe service guard))) (warn "Only *.[component|directive|module|pipe|service|guard].ts files are supported"))
      (t (let ((default-directory ng-project-dir)
               (command (format
                         "ng generate %s %s --flat -f %s %s"
@@ -92,7 +90,6 @@ from dir and up, for the current buffer"
             result))))))
 
 ;; Utilities
-
 (defun string-contains (haystack needle)
   (string-match-p (regexp-quote needle) haystack))
 
