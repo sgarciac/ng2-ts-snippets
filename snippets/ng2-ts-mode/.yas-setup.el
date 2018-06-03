@@ -1,4 +1,5 @@
 ;; Angular base functions
+(require 'projectile)
 
 (defun angular-buffer-type ()
   (let ((parts (split-string
@@ -24,17 +25,7 @@ with angula cli"
                          (split-string
                           (file-name-base
                            (buffer-path)) "\\.")))))
-    (angular-relative-path (concat dir basename) (find-ng-project-dir-for-buffer))))
-
-(defun find-ng-project-dir (dir)
-  "Find the closest angular project directory, from dir and up"
-  (if (string= "/" dir)
-      nil
-    (if (or (file-exists-p (expand-file-name "angular.json" dir))
-            (file-exists-p (expand-file-name ".angular-cli.json" dir)))
-        dir
-      (find-ng-project-dir (expand-file-name "../" dir)))))
-
+    (angular-relative-path (concat dir basename) (projectile-project-root))))
 
 (defun find-ng-closest-module (dir angular-dir)
   "Find the closest angular module, discarding routing ones, from dir and up"
@@ -51,15 +42,11 @@ with angula cli"
             (angular-relative-path (concat dir (first modules)) angular-dir)
           (find-ng-closest-module (expand-file-name "../" dir) angular-dir))))))
 
-(defun find-ng-project-dir-for-buffer ()
-  "Find the closest angular project directory, from dir and up
-for the current buffer"
-  (find-ng-project-dir (file-name-directory (buffer-path))))
 
 (defun find-ng-closest-module-for-buffer ()
   "Find the closest angular module, discarding routing ones,
 from dir and up, for the current buffer"
-  (find-ng-closest-module (file-name-directory (buffer-path)) (find-ng-project-dir-for-buffer)))
+  (find-ng-closest-module (file-name-directory (buffer-path)) (projectile-project-root)))
 
 ;; Generators
 
@@ -68,7 +55,7 @@ from dir and up, for the current buffer"
   (save-current-buffer)
   (let ((type (angular-buffer-type))
         (closest-module (find-ng-closest-module-for-buffer))
-        (ng-project-dir (find-ng-project-dir-for-buffer)))
+        (ng-project-dir (projectile-project-root)))
     (when (eq type 'module) (setq skip-module t))
     (cond
      ((not ng-project-dir) (warn "You are not inside an angular cli project."))
